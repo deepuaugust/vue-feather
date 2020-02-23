@@ -1,0 +1,27 @@
+// Initializes the `quotes` service on path `/quotes`
+const createService = require('feathers-mongodb');
+const hooks = require('./quotes.hooks');
+const filters = require('./quotes.filters');
+
+module.exports = function () {
+  const app = this;
+  const paginate = app.get('paginate');
+  const mongoClient = app.get('mongoClient');
+  const options = { paginate };
+
+  // Initialize our service with any options it requires
+  app.use('/quotes', createService(options));
+
+  // Get our initialized service so that we can register hooks and filters
+  const service = app.service('quotes');
+
+  mongoClient.then(db => {
+    service.Model = db.collection('quotes');
+  });
+
+  service.hooks(hooks);
+
+  if (service.filter) {
+    service.filter(filters);
+  }
+};
